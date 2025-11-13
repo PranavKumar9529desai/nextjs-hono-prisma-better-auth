@@ -39,4 +39,4 @@ bun run dev
 - owner has all permission and access.
 - trainer can manage user attached to it.
 - user can simply view details of the gym and "attendance "record.
-- using BetterAuth for the authentication.
+- using "BetterAuth" for the "authentication".
