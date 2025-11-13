@@ -31,7 +31,12 @@ bun run prisma:generate
 ## Run
 
 ```bash
-bun dev
+bun run dev
 ```
 
-this repo is based on the [next-saas-starter](https://github.com/leerob/next-saas-starter) and [nextjs-better-auth-SaaS-stater](https://github.com/Bekacru/nextjs-better-auth-SaaS-stater)
+### Role based Access Control
+- 3 level access owner,trainer and user.
+- owner has all permission and access.
+- trainer can manage user attached to it.
+- user can simply view details of the gym and "attendance "record.
+- using BetterAuth for the authentication.

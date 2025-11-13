@@ -29,11 +29,31 @@ export const requireOrganizationContext = createMiddleware(async (c, next) => {
     return c.json({ message: "Unauthorized" });
   }
 
-  // Get organization ID from session or query/params
-  const organizationId =
-    session.session.activeOrganizationId ||
-    c.req.query("organizationId") ||
-    c.req.param("organizationId");
+  const organizationIdFromSession = session.session.activeOrganizationId;
+  const organizationIdFromRequest =
+    c.req.query("organizationId") || c.req.param("organizationId") || undefined;
+
+  let organizationId = organizationIdFromSession;
+
+  if (organizationIdFromRequest && organizationIdFromRequest !== organizationIdFromSession) {
+    try {
+      await auth.api.setActiveOrganization({
+        body: { organizationId: organizationIdFromRequest },
+        headers: c.req.raw.headers,
+      });
+      organizationId = organizationIdFromRequest;
+    } catch (error) {
+      c.status(400);
+      return c.json({
+        message: "Failed to set active organization",
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  if (!organizationId) {
+    organizationId = organizationIdFromRequest;
+  }
 
   if (!organizationId) {
     c.status(400);

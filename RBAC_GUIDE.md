@@ -134,6 +134,87 @@ See `server/modules/gym/index.ts` for a complete example with:
 - Organization-scoped queries
 - Type-safe database operations
 
+### With Next.js Frontend
+
+- `server/modules/me/index.ts` exposes `/api/me/membership`
+- `lib/rbac-client.ts` wraps membership fetch + helpers
+- `hooks/use-rbac.ts` provides `useRBAC`, `useMembership`, `usePermission`
+- `components/rbac/guards.tsx` offers `<RequireRole>` / `<RequirePermission>` wrappers
+
+## Frontend Access Control
+
+### 1. Fetch membership on the client or server
+
+```typescript
+// Client: any component or hook
+import { fetchMembership } from "@/lib/rbac-client";
+
+const membership = await fetchMembership();
+```
+
+### 2. Use the React hook for live state
+
+```typescript
+"use client";
+import { useRBAC } from "@/hooks/use-rbac";
+import { Role, Permission } from "@/server/lib/rbac";
+
+const { role, can, hasRole, permissions } = useRBAC();
+
+if (hasRole(Role.TRAINER)) {
+  // render trainer UI
+}
+
+const canManage =
+  can([Permission.MANAGE_MEMBERS, Permission.ASSIGN_WORKOUTS], { requireAll: true });
+```
+
+### 3. Guard UI blocks declaratively
+
+```tsx
+"use client";
+import { RequireRole, RequirePermission } from "@/components/rbac/guards";
+import { Role, Permission } from "@/server/lib/rbac";
+
+export function InviteButton() {
+  return (
+    <RequirePermission permission={Permission.INVITE_MEMBERS} fallback={null}>
+      <button>Invite member</button>
+    </RequirePermission>
+  );
+}
+
+export function OwnerPanel() {
+  return (
+    <RequireRole role={Role.OWNER} fallback={<p>Owner access only.</p>}>
+      <div>Danger zone controls...</div>
+    </RequireRole>
+  );
+}
+```
+
+### 4. Server components or actions
+
+```typescript
+// app/(dashboard)/layout.tsx
+import { headers } from "next/headers";
+
+export async function getMembership() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/me/membership`, {
+    headers: {
+      cookie: headers().get("cookie") ?? "",
+    },
+    cache: "no-store",
+    credentials: "include",
+  });
+
+  if (!res.ok) throw new Error("Unauthorized");
+  return res.json();
+}
+```
+
+> Tip: pair server-side checks with the Hono middleware so both layers enforce the same rules.
+
 ## Best Practices
 
 1. **Always use `requireOrganizationContext` first** for multi-tenant routes
