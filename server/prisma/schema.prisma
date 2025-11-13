@@ -31,7 +31,7 @@ model User {
   members          Member[]
   invitations      Invitation[]
   twofactors       TwoFactor[]
-
+  posts            Post[]
   @@unique([email])
   @@map("user")
 }
@@ -103,6 +103,8 @@ model Member {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Role must be one of: "OWNER", "TRAINER", "USER"
+  // See server/lib/rbac/types.ts for Role enum
   role           String
   createdAt      DateTime
 
@@ -114,6 +116,8 @@ model Invitation {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   email          String
+  // Role must be one of: "OWNER", "TRAINER", "USER"
+  // See server/lib/rbac/types.ts for Role enum
   role           String?
   status         String
   expiresAt      DateTime
@@ -131,4 +135,17 @@ model TwoFactor {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("twoFactor")
+}
+
+
+model Post {
+  id        String   @id @map("_id")
+  title     String
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("post")
 }

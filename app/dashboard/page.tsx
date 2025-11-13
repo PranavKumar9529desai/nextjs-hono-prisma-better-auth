@@ -1,4 +1,5 @@
 import SignOutButton from "@/components/logout";
+import PostsTest from "@/components/post-test";
 import PrivateRoute from "@/components/privateRoute";
 
 export default function DashboardPage() {
@@ -7,6 +8,7 @@ export default function DashboardPage() {
       <h1>Private dashboard</h1>
       <SignOutButton />
       <PrivateRoute />
+      <PostsTest />
     </div>
   );
 }
